@@ -38,7 +38,7 @@ def parse_instruction(ins, symbol_map, string_map):
 
 def get_unique_block_name(file_name, func_name, index):
     tokens = file_name.split('-')
-    return tokens[-1]+ '.' +func_name[-2:]+ str(index)
+    return tokens[-1] + '.' + func_name + '.' + str(index)
 
 def process_file(f, window_size):
     symbol_map = {}
@@ -101,7 +101,7 @@ def process_file(f, window_size):
     # gc.collect()
 
 def main():
-    bin_folder = '../../binaries/' 
+    bin_folder = '../../binaries-20K/' 
     file_lst = []
     str_counter = Counter()
     window_size = 1;
@@ -115,11 +115,33 @@ def main():
         process_file(f, window_size)
         i+=1
 
+    #Keep Either of these two code blocks
     #delete items from the dictionary without pairs
-    for key, pairs in list(basic_block_pairs.items()):
+    """for key, pairs in list(basic_block_pairs.items()):
         if(len(pairs)<2):
-            del basic_block_pairs[key]           
-    
+            del basic_block_pairs[key]"""           
+
+    cap_on_num_of_tokens = 305
+    #delete items related to the function that doesn't have matching pair of basic blocks 
+    """for key, pairs in list(basic_block_pairs.items()):
+        #Delete if number_of_tokens cross a cap
+        no_of_tokens = len(re.split(' +|;',pairs[0])) - 1
+        if(no_of_tokens > cap_on_num_of_tokens):
+            try:
+                del basic_block_pairs[key]
+            except KeyError:
+                pass
+            continue
+    """
+    for key, pairs in list(basic_block_pairs.items()):
+        #Delete if number_of_tokens cross a cap    
+        if(len(pairs)<2):
+            #del all basic_block_pairs entries for this function
+            tokens = key.split('.')      
+            func_name = tokens[1]
+            for jey, _ in list(basic_block_pairs.items()):
+                if(jey.split('.')[1] == func_name):
+                    del basic_block_pairs[jey]
     return
     
 
@@ -129,7 +151,7 @@ basic_block_pairs = {}
 if __name__ == "__main__":
     main()
     #Write dictionary to a pickle file
-    with open('mapping.pkl', 'wb') as handle:
+    with open('mapping-20K.pkl', 'wb') as handle:
         pickle.dump(basic_block_pairs, handle)
 
 
